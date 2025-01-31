@@ -1,3 +1,4 @@
+import SignUp from "@/components/auth/sign-up";
 import Image from "next/image";
 
 export default function Home() {
@@ -13,7 +14,7 @@ export default function Home() {
         />
         <h1>Starty v0.1</h1>
         <code>Um starter baseado em Next15+ e Tailwind v4+</code>
-
+        <SignUp />
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
