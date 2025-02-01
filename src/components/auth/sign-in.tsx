@@ -1,23 +1,19 @@
 "use client";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUp } from '@/lib/auth-client'; 
-import { signUpSchema, SignUpFormData } from '@/validators/auth/signUp.validator';
+import { signIn } from '@/lib/auth-client';
+import { SignInFormData, signInSchema } from '@/validators/auth/signIn.validator';
+import { redirect, useRouter } from 'next/navigation';
 
-export default function SignUp() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema), // Integração com Zod
-  });
+export default function SignInForm() {
+  const router = useRouter();
+  const { register, handleSubmit, formState: {errors}} = useForm<SignInFormData>({resolver: zodResolver(signInSchema)});
 
-  const onSubmit = async (data: SignUpFormData) => {
-    const { email, password, name } = data;
+  const onSubmit = async (data: SignInFormData) => {
+    const { email, password } = data;
 
-    const { data: response, error } = await signUp.email(
-      { email, password, name },
+    const { data: response, error } = await signIn.email(
+      { email, password },
       {
         onRequest: (ctx) => {
           console.log("CONTEXT RUNNING: ", ctx);
@@ -26,9 +22,13 @@ export default function SignUp() {
         onSuccess: (ctx) => {
           // Redirecionar para o dashboard
           console.log("Sign-up successful!", ctx);
-          alert("Sign-up successful!")
+          router.push('/dashboard')
         },
         onError: (ctx) => {
+          if(ctx.error.status === 403) {
+            console.error(ctx.error)
+            alert("Email precisa ser verificado")
+        }
           alert(ctx.error.message);
         },
       }
@@ -38,17 +38,6 @@ export default function SignUp() {
   return (
     <div className="grid w-full gap-2 bg-white p-2">
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-2">
-        {/* Campo Nome */}
-        <input
-          className="border border-gray-200 text-gray-500 p-1"
-          type="text"
-          placeholder="Nome"
-          {...register('name')}
-        />
-        {errors.name && (
-          <span className="text-red-500 text-sm">{errors.name.message}</span>
-        )}
-
         {/* Campo Email */}
         <input
           className="border border-gray-200 text-gray-500 p-1"
@@ -73,7 +62,7 @@ export default function SignUp() {
 
         {/* Botão de Cadastro */}
         <button type="submit" className="bg-blue-600 text-white p-4">
-          Sign Up
+          Sign In
         </button>
       </form>
     </div>
