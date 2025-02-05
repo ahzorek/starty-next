@@ -1,22 +1,26 @@
-"use client"
+"use client";
+
+import { LogOut } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from 'next/navigation'
+import { Button } from "@radix-ui/themes";
+import { useRouter } from 'next/navigation';
 
 export const SignOutButton = () => {
-    const router = useRouter();
-    
-    return (
+	const router = useRouter();
 
-            <button onClick={async () => {
-                await authClient.signOut({
-                    fetchOptions: {
-                      onSuccess: () => {
-                        router.push('/signin')
-                      },
-                    },
-                  });
-            }}>sign out</button>
+	return (
+		<Button color="red" variant="soft" onClick={async () => {
+			await authClient.signOut({
+				fetchOptions: {
+					onSuccess: () => {
+						router.push('/signin')
+					},
+				},
+			});
+		}}>
+			<LogOut size={16} /> Sair
+		</Button>
 
-    )
+	)
 }

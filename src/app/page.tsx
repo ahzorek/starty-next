@@ -1,10 +1,14 @@
 import SignUp from "@/components/auth/sign-up";
+import { UserService } from "@/services/UserService";
+import { Code, Heading } from "@radix-ui/themes";
 import Image from "next/image";
 
-export default function Home() {
+export default async function Home() {
+  const userService = new UserService();
+  const users = await userService.getAllUsers();
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <div className="grid items-center justify-items-center min-h-screen p-6 gap-16 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-8 row-start-2 items-center">
         <Image
           src="/starty.svg"
           alt="Starty Logo"
@@ -12,9 +16,20 @@ export default function Home() {
           height={38}
           priority
         />
-        <h1>Starty v0.1</h1>
+        <Heading size="8">Starty v0.1</Heading>
         <code>Um starter baseado em Next15+ e Tailwind v4+</code>
-        <SignUp />
+        {
+          !!users && users.length > 0
+            ?
+            <Code size="2">
+              <pre className="p-4">
+                {JSON.stringify(users, null, 2)}
+              </pre>
+            </Code>
+
+            :
+            <SignUp />
+        }
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
@@ -35,4 +50,4 @@ export default function Home() {
       </footer>
     </div>
   );
-}
+};
