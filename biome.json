@@ -1,0 +1,71 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"ignore": [
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/prisma/migrations"
+    ]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"attributePosition": "auto"
+	  },
+	"organizeImports": {
+		"enabled": true
+	},
+"linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "a11y": {
+        "noAriaUnsupportedElements": "warn",
+        "noBlankTarget": "off",
+        "useAltText": "warn",
+        "useAriaPropsForRole": "warn",
+        "useValidAriaProps": "warn",
+        "useValidAriaValues": "warn"
+      },
+      "correctness": {
+        "noChildrenProp": "error",
+        "useExhaustiveDependencies": "off",
+        "useHookAtTopLevel": "error",
+        "useJsxKeyInIterable": "error"
+      },
+      "security": { 
+				"noDangerouslySetInnerHtmlWithChildren": "warn" 
+			},
+      "suspicious": {
+        "noImplicitAnyLet": "off",
+        "noCommentText": "error",
+        "noDuplicateJsxProps": "error"
+      },
+      "style": {
+        "useSingleVarDeclarator": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons":"always",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto"
+    }
+	},
+	"overrides": [{ "include": ["**/*.ts?(x)"] }]
+	
+}

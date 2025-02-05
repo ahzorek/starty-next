@@ -1,11 +1,11 @@
 import { betterFetch } from "@better-fetch/fetch";
-import type { auth } from "@/lib/auth";
+import { auth, Session } from "@/lib/auth";
 import { NextResponse, type NextRequest } from "next/server";
- 
-type Session = typeof auth.$Infer.Session;
- 
+
+
 export default async function middleware(request: NextRequest) {
-    console.log('Running on Middleware :::  ', request)
+	//console.log('Running on Middleware :::  ', request)
+
 	const { data: session } = await betterFetch<Session>(
 		"/api/auth/get-session",
 		{
@@ -16,13 +16,13 @@ export default async function middleware(request: NextRequest) {
 			},
 		},
 	);
- 
+
 	if (!session) {
 		return NextResponse.redirect(new URL("/", request.url));
 	}
 	return NextResponse.next();
 }
- 
+
 export const config = {
 	matcher: ["/dashboard"],
 };
