@@ -1,54 +1,78 @@
 'use client'
 
 import { Button, Flex, TextArea, Text } from "@radix-ui/themes"
-import { useActionState, useEffect, useRef, useState } from "react"
+import { useActionState, useEffect, useRef, useState, useTransition, useCallback, RefObject } from "react"
+import { useForm } from "react-hook-form"
 import { sendMessage } from "../actions"
 import { toast } from "sonner"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { chatValidator } from "@/validators/llm/chat.validator"
+import { z } from "zod"
+import { submitFormOnPressEnter } from "@/lib/utils"
+
 
 export default function ChatInputForm({ chatId }: { chatId: string }) {
-  const [message, setMessage] = useState('')
   const [messageHistory, setMessageHistory] = useState<string[]>([])
-  const formRef = useRef<HTMLFormElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [isTransitionPending, startTransition] = useTransition()
+  const [state, formAction, isActionPending] = useActionState(sendMessage, { success: null })
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const [state, formAction, isPending] = useActionState(sendMessage, {
-    success: null
+  const { formState: { errors, isSubmitting }, watch, register, reset } = useForm<z.output<typeof chatValidator>>({
+    resolver: zodResolver(chatValidator),
+    defaultValues: {
+      id: chatId,
+      humanMessage: '',
+    },
+    mode: 'onChange',
   })
 
-  useEffect(() => {
-    console.log('new state is: ', state)
-    if (state.success) {
-      setMessage('')
-    }
-    if (state.message) {
-      setMessageHistory((prev: string[]) => [...prev, state.message as string])
-    }
-    if (!state.success) {
-      toast.error(state.error)
+  const isFormPending = isTransitionPending || isActionPending || isSubmitting
+  const messageValue = watch('humanMessage')
 
+  useEffect(() => {
+    if (!state.success && state.error) {
+      toast.error(state.error)
     }
-  }, [state])
+    if (state.success && state.message) {
+      setMessageHistory((prev) => [...prev, state.message!])
+      reset({ humanMessage: '' });
+    }
+  }, [state, reset])
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startTransition(() => {
+      try {
+        formAction(new FormData(formRef.current!))
+      } catch (error) {
+        toast.error('Failed to send message. Please try again.')
+      }
+    });
+  }
 
   return (
     <>
       <form
         ref={formRef}
-        action={formAction}
+        onSubmit={onSubmit}
         className="sticky bottom-0 py-6"
       >
         <Flex direction="column" gap="3">
-          {state?.error && (
+          {errors.humanMessage && (
             <Text color="red" size="2">
-              {state.error}
+              {errors.humanMessage.message}
             </Text>
           )}
-          <input readOnly name="chatId" value={chatId} />
+          <input
+            type="hidden"
+            {...register('id')}
+          />
           <TextArea
-            ref={textareaRef}
-            name="message"
+            {...register('humanMessage')}
+            disabled={isFormPending}
+            aria-busy={isFormPending}
             placeholder="Type your message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => submitFormOnPressEnter(e, formRef, isFormPending, messageValue)}
             style={{
               resize: 'none',
               minHeight: '44px',
@@ -56,9 +80,9 @@ export default function ChatInputForm({ chatId }: { chatId: string }) {
             }}
           />
           <Button
-            loading={isPending}
             type="submit"
-            disabled={!message.trim() || isPending}
+            loading={isFormPending}
+            disabled={isFormPending || !messageValue?.trim()}
             size="4"
           >
             Send
@@ -66,11 +90,21 @@ export default function ChatInputForm({ chatId }: { chatId: string }) {
         </Flex>
       </form>
       <Flex direction="column" gap="3">
-        {messageHistory && messageHistory.length > 0 && (
-          messageHistory.map((m, index) => <p key={index}>{m}</p>)
+        {messageHistory.length > 0 ? (
+          messageHistory.map((message, index) => (
+            <div
+              key={index}
+              className="p-4 rounded-lg bg-gray-100"
+              role="log"
+              aria-live="polite"
+            >
+              {message}
+            </div>
+          ))
+        ) : (
+          <Text color="gray">Não há mensagens</Text>
         )}
       </Flex>
     </>
   )
 }
-
